@@ -10,3 +10,6 @@ class DocumentChunkSerializer(serializers.ModelSerializer):
     class Meta:
         model = DocumentChunk
         fields = "__all__"
+
+class QuerySerializer(serializers.Serializer):
+    question = serializers.CharField()
