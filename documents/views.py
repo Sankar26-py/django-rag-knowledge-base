@@ -6,6 +6,7 @@ from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from services.retrieval_service import RetrievalService
+from services.llm_service import LLMService
 
 # Create your views here.
 class DocumentUploadView(generics.CreateAPIView):
@@ -26,12 +27,13 @@ class QueryView(APIView):
         if serializer.is_valid(raise_exception=True):
             question = serializer.validated_data['question']
             results = RetrievalService.search(question)
-            return Response(
-                            {
-                                "question": question,
-                                "chunks": [
-                                    chunk.content
-                                    for chunk in results
-                                ]
-                            }
-                        )
+            context = "\n\n".join(chunk.content for chunk in results)
+            answer = LLMService.generate_answer(question,context)
+            return Response({
+                "question": question,
+                "answer": answer,
+                "sources": [
+                    chunk.id
+                    for chunk in results
+                ]
+            })
